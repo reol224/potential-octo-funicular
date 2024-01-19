@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {rooms} from "@/db/schema";
 import api from "@/lib/api";
+import {useRouter} from "next/navigation";
 
 export default function ChatRoom({ params }: { params: { slug: string } }) {
     const [isConnected, setIsConnected] = useState(false);
@@ -14,6 +15,7 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
     const userId = useRef<string>(uuidv4());
     const [password, setPassword] = useState<string>("");
     const [isPasswordPromptOpen, setIsPasswordPromptOpen] = useState<boolean>(true);
+    const router = useRouter()
 
     useEffect(() => {
         // Initialize WebSocket connection only once when the component mounts
@@ -75,7 +77,8 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
                 <div>
                     <p>Enter password to join the room:</p>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                    <Button onClick={handleEnterRoom}>Enter</Button>
+                    <Button onClick={handleEnterRoom}>Enter room</Button>
+                    <Button onClick={() => router.back()}>Go back</Button>
                 </div>
             ) : (
                 <div>
@@ -88,6 +91,7 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
                     </div>
                     <Textarea placeholder="Type your message here." value={message} onChange={(e) => setMessage(e.target.value)} />
                     <Button onClick={handleSendMessage}>Send message</Button>
+                    <Button onClick={() => router.back()}>Exit chat room</Button>
                 </div>
             )}
         </div>
