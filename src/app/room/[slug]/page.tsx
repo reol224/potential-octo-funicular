@@ -8,46 +8,41 @@ import api from "@/lib/api";
 
 export default function ChatRoom({ params }: { params: { slug: string } }) {
     const [isConnected, setIsConnected] = useState(false);
-    const ws = useRef<WebSocket | null>();
+    const ws = useRef<WebSocket | null>(null);
     const [message, setMessage] = useState("");
-    const [messageList, setMessageList] = useState<{ id: string, text: string, room: string }[]>([]);
+    const [messageList, setMessageList] = useState<{ id: string; text: string; room: string }[]>([]);
     const userId = useRef<string>(uuidv4());
     const [password, setPassword] = useState<string>("");
     const [isPasswordPromptOpen, setIsPasswordPromptOpen] = useState<boolean>(true);
 
     useEffect(() => {
-        try {
-            const chatSocket: WebSocket = new WebSocket(`ws://127.0.0.1:3001?room=${params.slug}&password=${password}`);
+        // Initialize WebSocket connection only once when the component mounts
+        const chatSocket: WebSocket = new WebSocket(`ws://127.0.0.1:3001?room=${params.slug}&password=${password}`);
 
-            if (!chatSocket) return;
+        chatSocket.onopen = () => {
+            console.log("Connected to server.");
+            setIsConnected(true);
+        };
 
-            chatSocket.onopen = () => {
-                console.log("Connected to server.");
-                setIsConnected(true);
-            };
+        chatSocket.onclose = () => {
+            console.log("Disconnected from server.");
+            setIsConnected(false);
+        };
 
-            chatSocket.onclose = () => {
-                console.log("Disconnected from server.");
-                setIsConnected(false);
-            };
-
-            chatSocket.onmessage = (e: MessageEvent) => {
-                console.log(e);
-                const receivedMessage = JSON.parse(e.data);
-                if (receivedMessage.room === params.slug) {
-                    setMessageList((prev) => [...prev, receivedMessage]);
-                }
-            };
-
-            ws.current = chatSocket;
-
-            return () => {
-                chatSocket.close();
-            };
-        } catch (e) {
+        chatSocket.onmessage = (e: MessageEvent) => {
             console.log(e);
-        }
-    }, [params.slug, password]);
+            const receivedMessage = JSON.parse(e.data);
+            if (receivedMessage.room === params.slug) {
+                setMessageList((prev) => [...prev, receivedMessage]);
+            }
+        };
+
+        ws.current = chatSocket;
+
+        return () => {
+            chatSocket.close();
+        };
+    }, [params.slug]);
 
     const handleSendMessage = () => {
         if (message && ws.current) {
@@ -58,9 +53,7 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
     };
 
     const handleEnterRoom = async () => {
-        console.error("handling enter room");
         try {
-            // Perform a request to your server to verify the password
             const response = await api.post("/verify-password", {
                 room: params.slug,
                 password: password,
@@ -68,21 +61,13 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
 
             if (response.data.success) {
                 setIsPasswordPromptOpen(false);
-                // Add your logic for successful entry into the room here
             } else {
-                // Password is incorrect, display an error or handle it accordingly
                 console.error("Incorrect password");
             }
         } catch (error) {
             console.error("Error verifying password:", error);
         }
     };
-
-
-
-    // const handleEnterRoom = () => {
-    //     setIsPasswordPromptOpen(false);
-    // };
 
     return (
         <div className="grid w-full gap-2">

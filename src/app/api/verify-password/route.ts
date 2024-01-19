@@ -5,7 +5,6 @@ import {rooms} from "@/db/schema";
 import {eq, sql} from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
-    // parse the streaming body to json
     const { room, password } = await request.json();
 
     try {
@@ -13,23 +12,43 @@ export async function POST(request: NextRequest) {
         const roomsList = await db
             .select()
             .from(rooms)
-            .where(eq(rooms.name, room));
+            .where(eq(rooms.id, room));
+
+        console.log('Received Room:', room);
+        console.log('Received Password:', password);
+        console.log('Rooms List:', roomsList);
 
         if (roomsList.length > 0) {
-            // Iterate through the rooms to find a matching password
-            const roomWithMatchingPassword = roomsList.find(async (room) =>
-                room.password ? await bcrypt.compare(password, room.password) : false
-            );
+            // Access the first record in the array
+            const roomRecord = roomsList[0];
 
-            if (roomWithMatchingPassword) {
-                // Passwords match, user can enter the room
-                return NextResponse.json({ success: true });
+            console.log('Room Record:', roomRecord);
+
+            // Check if the password and roomRecord.password are not null
+            if (password && roomRecord.password !== null) {
+                // Compare the password with the hashed password
+                //const passwordMatches = await bcrypt.compare(password, roomRecord.password);
+                const passwordMatches = password === roomRecord.password;
+
+                console.log('Password Matches:', passwordMatches);
+
+                if (passwordMatches) {
+                    // Passwords match, user can enter the room
+                    console.log('Password Matched');
+                    return NextResponse.json({ success: true });
+                } else {
+                    // Password doesn't match
+                    console.log('Password Mismatch');
+                    return NextResponse.json({ success: false, message: 'Incorrect password' });
+                }
             } else {
-                // No room with matching password found
-                return NextResponse.json({ success: false, message: 'Incorrect password' });
+                // Either password or roomRecord.password is null
+                console.log('Password or Room Record Password is null');
+                return NextResponse.json({ success: false, message: 'Invalid password or room data' });
             }
         } else {
             // Room not found
+            console.log('Room Not Found');
             return NextResponse.json({ success: false, message: 'Room not found' });
         }
     } catch (error) {
