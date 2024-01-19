@@ -1,0 +1,17 @@
+#!/bin/bash
+if [ $1 == "" ]; then
+    echo $"Usage: $0 {up|down}"
+    exit 0
+fi
+
+case $1 in
+up)
+    docker compose -p nextjs-chat-app -f docker/docker-compose.dev.yml up -d
+    ;;
+down)
+    docker compose -p nextjs-chat-app -f docker/docker-compose.dev.yml down
+    ;;
+-h | --help)
+    echo $"Usage: $0 {up|down}"
+    ;;
+esac
