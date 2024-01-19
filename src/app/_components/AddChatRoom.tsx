@@ -66,7 +66,7 @@ const AddChatRoom: React.FC<AddChatRoomProps> = ({ onRoomAdded }: AddChatRoomPro
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input placeholder="random" {...field} />
+                                <Input type="password" placeholder="random" {...field} />
                             </FormControl>
                             <FormDescription>
                                 Use password to restrict access to your chat room.
