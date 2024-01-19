@@ -58,6 +58,7 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
     };
 
     const handleEnterRoom = async () => {
+        console.error("handling enter room");
         try {
             // Perform a request to your server to verify the password
             const response = await api.post("/verify-password", {
