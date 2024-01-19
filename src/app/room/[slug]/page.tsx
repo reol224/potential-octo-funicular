@@ -91,6 +91,7 @@ export default function ChatRoom({ params }: { params: { slug: string } }) {
                     </div>
                     <Textarea placeholder="Type your message here." value={message} onChange={(e) => setMessage(e.target.value)} />
                     <Button onClick={handleSendMessage}>Send message</Button>
+                    <Button onClick={() => router.back()}>Exit chat room</Button>
                 </div>
             )}
         </div>
